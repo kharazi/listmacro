@@ -77,6 +77,14 @@ get		macro	adres,index			;move 	index	to ebx				;;;;;;;;;;;;;;;must check index
 
 ENDM
 
+
+len 	macro 	adres				; Move len of list to eax register
+		push 	ecx 
+		mov 	ecx, adres
+		mov 	eax , (arr PTR[ecx]).len 
+		pop 	ecx
+ENDM
+
 show	macro	adres				;output	all indexes
 local forloop,end_m
 
