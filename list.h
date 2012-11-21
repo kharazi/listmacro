@@ -44,6 +44,8 @@ list	macro	siz					;mov address to eax
 		
 ENDM		
 
+
+
 append	macro	adres,value			
 local	continue
 		
@@ -68,7 +70,7 @@ continue:
 		popad									;reload registers
 
 ENDM
-		
+
 get		macro	adres,index			;move 	index	to ebx				;;;;;;;;;;;;;;;must check index
 
 		mov		eax,adres						;address of object
@@ -79,11 +81,43 @@ ENDM
 
 
 len 	macro 	adres				; Move len of list to eax register
-		push 	ecx 
-		mov 	ecx, adres
-		mov 	eax , (arr PTR[ecx]).len 
+		push 	ecx 					; Save ecx register
+		mov 	ecx, adres				
+		mov 	eax , (arr PTR[ecx]).len	; Move len of list to eax register  
+		pop 	ecx						; Reload eax register
+ENDM
+
+
+
+find	macro 	adres,value 				; Move first occourd value in list to eax register , Move -1 if not find
+local 	find_for,not_find,end_find,finded	
+		
+		push 	ecx
+		push 	edx
+		
+		mov 	eax, adres 
+		mov 	ecx , (arr PTR[eax]).address
+		mov 	edx , (arr PRT[eax]).len 
+		jz		not_find		; if len ==0 
+		dec 	edx
+		mov 	ebx, 0 
+find_for:
+		cmp 	value,[ecx+ebx*4]
+		je		finded
+		cmp 	ebx,edx
+		jle		find_for 
+		
+		
+not_find:
+		mov 	eax,-1
+		jmp		end_find
+finded:
+		mov 	eax, ebx 
+end_find:
+		pop 	edx
 		pop 	ecx
 ENDM
+
 
 show	macro	adres				;output	all indexes
 local forloop,end_m
