@@ -21,48 +21,63 @@ string	BYTE	20	DUP(?),0
 endl	BYTE	cr,Lf,0
 .CODE
 _start:	
-
-	list 20
-	append	eax,1
-	append	eax,2
-	append	eax,3
-	append	eax,4
-	show	eax
+	mov		metallica,0
+	list metallica,20
+	append	metallica,1
+	append	metallica,2
+	append	metallica,3
+	append	metallica,4
+	show	metallica
 		output	endl
 		
-	get		eax,1
+	get		metallica,1
 	dtoa	string,ebx
 	output	string
 		output	endl
 		output	endl
 		
-	pop_back 	eax
-	show	eax
+	pop_back 	metallica
+	show	metallica
 		output	endl
 		output	endl
 		
-	top		eax
+	top		metallica
 	dtoa	string,ebx
 	output	string
 		output	endl
 		output	endl
 		
-	append	eax,4
-	delete	eax,1
-	show	eax
+	append	metallica,4
+	delete	metallica,1
+	show	metallica
 		output	endl
 		output	endl
 		
-	delete	eax,0
-	append	eax,2
-	append	eax,1
-	append	eax,3
-	show	eax
+	delete	metallica,0
+	append	metallica,2
+	append	metallica,1
+	append	metallica,3
+	show	metallica
 		output	endl
 		output	endl
 		
-	min		eax
+	min		metallica
 	dtoa	string,ebx
+	output	string
+		output	endl
+		output	endl
+	show metallica
+		output	endl
+		output	endl
+		
+	len		metallica
+	dtoa	string,eax
+	output	string
+		output	endl
+		output	endl
+		
+	find		metallica,4
+	dtoa	string,eax
 	output	string
 		output	endl
 		output	endl
