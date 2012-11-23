@@ -25,7 +25,12 @@ arr STRUCT
 	len 		DWORD 		?
 arr ENDS
 
-list	macro	siz					;mov address to eax
+list	macro	nam,siz					;mov address to eax
+		
+		.DATA
+		nam		DWORD		?
+		
+		.CODE
 		
 		mov 	eax,siz					
 		push 	eax
@@ -40,19 +45,16 @@ list	macro	siz					;mov address to eax
 		mov 	[ebx].len,0					
 		
 		mov		eax,ebx							;returns address of object in eax
+		mov		nam,eax							;save address of object in memory
 		
 		
 ENDM		
 
-
-
-append	macro	adres,value			
+append	macro	nam,value			
 local	continue
 		
 		pushad									;save	registers
-		
-		mov		eax,adres						;address of object
-			
+		mov		eax,nam						;address of object
 		mov		ecx,(arr PTR[eax]).address		;address of list
 		mov		ebx,(arr PTR[eax]).len
 		mov		edx,(arr PTR[eax]).s
@@ -71,38 +73,29 @@ continue:
 
 ENDM
 
-get		macro	adres,index			;move 	index	to ebx				;;;;;;;;;;;;;;;must check index
-
-		mov		eax,adres						;address of object
-		mov 	ecx,[(arr PTR[eax]).address]
-		mov		ebx,[ecx+4*index]
-
-ENDM
-
-
-len 	macro 	adres				; Move len of list to eax register
+len 	macro 	nam				; Move len of list to eax register
 		push 	ecx 					; Save ecx register
-		mov 	ecx, adres				
+		mov		ecx,nam						;address of object
 		mov 	eax , (arr PTR[ecx]).len	; Move len of list to eax register  
-		pop 	ecx						; Reload eax register
+		pop 	ecx						; Reload ecx register
 ENDM
 
 
 
-find	macro 	adres,value 				; Move first occourd value in list to eax register , Move -1 if not find
+find	macro 	nam,value 				; Move first occourd value in list to eax register , Move -1 if not find
 local 	find_for,not_find,end_find,finded	
 		
 		push 	ecx
 		push 	edx
-		
-		mov 	eax, adres 
+		mov		eax,nam						;address of object
 		mov 	ecx , (arr PTR[eax]).address
-		mov 	edx , (arr PRT[eax]).len 
+		mov 	edx , (arr PTR[eax]).len 
 		jz		not_find		; if len ==0 
 		dec 	edx
 		mov 	ebx, 0 
 find_for:
-		cmp 	value,[ecx+ebx*4]
+		mov		edi,[ecx+ebx*4]
+		cmp 	edi,value
 		je		finded
 		cmp 	ebx,edx
 		jle		find_for 
@@ -117,15 +110,22 @@ end_find:
 		pop 	edx
 		pop 	ecx
 ENDM
+		
+get		macro	nam,index			;move 	index	to ebx				;;;;;;;;;;;;;;;must check index
 
+		mov		eax,nam						;address of object
+		mov 	ecx,[(arr PTR[eax]).address]
+		mov		ebx,[ecx+4*index]
 
-show	macro	adres				;output	all indexes
+ENDM
+
+show	macro	nam				;output	all indexes
 local forloop,end_m
-
 		pushad									;save	registers
-		mov		eax,adres						;address of object
+		mov		eax,nam							;address of object
 		mov		ecx,(arr PTR[eax]).address		;address of list 	;age jaye ecx o ba ebx avaz konim error mide!
 		mov		edx,(arr PTR[eax]).len
+		cmp		edx,0
 		jz		end_m							;if len=0
 		dec  	edx								;cause	index start from 0
 		mov 	ebx,0
@@ -140,27 +140,27 @@ end_m:
 		popad									;reload registers
 ENDM
 
-pop_back macro	adres				;pop the last index
+pop_back macro	nam				;pop the last index
 
 		 pushad									;save	registers
-		 mov		eax,adres					;address of object
+		 mov		eax,nam						;address of object
 		 dec		(arr PTR[eax]).len
 		 popad									;reload registers
 ENDM
 
-top		 macro	adres				;return's the last index in ebx
+top		 macro	nam				;return's the last index in ebx
 
-		 mov		eax,adres					;address of object
+		 mov		eax,nam						;address of object
 		 mov		ecx,(arr PTR[eax]).address
 		 mov		edx,(arr PTR[eax]).len
 		 dec		edx
 		 mov		ebx,[ecx+4*edx]
 ENDM
 
-delete 	 macro	adres,index			 ;delete the  index
+delete 	 macro	nam,index			 ;delete the  index
 local forloop2,end_m2
 		pushad									;save	registers
-		mov		eax,adres						;address of object
+		mov		eax,nam						;address of object
 		mov		ecx,(arr PTR[eax]).address		;address of list 	;age jaye ecx o ba ebx avaz konim error mide!
 		mov		edx,(arr PTR[eax]).len
 		dec 	edx
@@ -184,11 +184,10 @@ end_m2:
 ENDM
 
 
-min		macro	  adres
+min		macro	  nam
 local forloop3,ebxbigger,endloop3
-
-		mov		eax,adres						;address of object
 		push 	eax
+		mov		eax,nam						;address of object
 		mov		ecx,(arr PTR[eax]).address		;address of list 	;age jaye ecx o ba ebx avaz konim error mide!
 		mov		edx,(arr PTR[eax]).len
 		
