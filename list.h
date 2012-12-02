@@ -2,7 +2,6 @@
 .386
 .STACK 4096 
 
-
 ExitProcess PROTO NEAR32 stdcall, dwExitCode:DWORD
 
 INCLUDE io.h 
@@ -14,8 +13,13 @@ Lf EQU 0ah
 
 .DATA
 append_error	BYTE	"ERROR!",cr,Lf,"len=size",0
+outofindex		BYTE	"ERROR!",cr,Lf,"index>len",0
 reshte			BYTE	11 DUP(?),0
 reshte2			BYTE	'*',0
+privot			DWORD	?
+i				DWORD 	?
+j				DWORD	?
+tmp				DWORD	?
 .CODE
 
 
@@ -54,13 +58,13 @@ append	macro	nam,value
 local	continue
 		
 		pushad									;save	registers
-		mov		eax,nam						;address of object
+		mov		eax,nam							;address of object
 		mov		ecx,(arr PTR[eax]).address		;address of list
 		mov		ebx,(arr PTR[eax]).len
 		mov		edx,(arr PTR[eax]).s
 	
 
-		cmp 	ebx,edx							;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+		cmp 	ebx,edx			
 		jl		continue						;jump if len<s 
 												;else if len>s or len=s	
 		output 	append_error
@@ -73,24 +77,24 @@ continue:
 
 ENDM
 
-len 	macro 	nam				; Move len of list to eax register
-		push 	ecx 					; Save ecx register
-		mov		ecx,nam						;address of object
-		mov 	eax , (arr PTR[ecx]).len	; Move len of list to eax register  
-		pop 	ecx						; Reload ecx register
+len 	macro 	nam								; Move len of list to eax register
+		push 	ecx 							; Save ecx register
+		mov		ecx,nam							;address of object
+		mov 	eax , (arr PTR[ecx]).len		; Move len of list to eax register  
+		pop 	ecx								; Reload ecx register
 ENDM
 
 
 
-find	macro 	nam,value 				; Move first occourd value in list to eax register , Move -1 if not find
+find	macro 	nam,value 			; Move first occourd value in list to eax register , Move -1 if not find
 local 	find_for,not_find,end_find,finded	
 		
 		push 	ecx
 		push 	edx
-		mov		eax,nam						;address of object
+		mov		eax,nam							;address of object
 		mov 	ecx , (arr PTR[eax]).address
 		mov 	edx , (arr PTR[eax]).len 
-		jz		not_find		; if len ==0 
+		jz		not_find						; if len ==0 
 		dec 	edx
 		mov 	ebx, 0 
 find_for:
@@ -111,11 +115,18 @@ end_find:
 		pop 	ecx
 ENDM
 		
-get		macro	nam,index			;move 	index	to ebx				;;;;;;;;;;;;;;;must check index
-
+get		macro	nam,index		;move 	index	to ebx				
+local	notbreak
 		mov		eax,nam						;address of object
 		mov 	ecx,[(arr PTR[eax]).address]
+		mov		edx,index
+		cmp		edx,(arr PTR[eax]).len		;check if index>len or not
+		jl		notbreak
+		output	outofindex
+		notbreak:
 		mov		ebx,[ecx+4*index]
+		
+		
 
 ENDM
 
@@ -157,10 +168,10 @@ top		 macro	nam				;return's the last index in ebx
 		 mov		ebx,[ecx+4*edx]
 ENDM
 
-delete 	 macro	nam,index			 ;delete the  index
+delete 	 macro	nam,index		;delete the  index
 local forloop2,end_m2
 		pushad									;save	registers
-		mov		eax,nam						;address of object
+		mov		eax,nam							;address of object
 		mov		ecx,(arr PTR[eax]).address		;address of list 	;age jaye ecx o ba ebx avaz konim error mide!
 		mov		edx,(arr PTR[eax]).len
 		dec 	edx
@@ -212,4 +223,125 @@ endloop3:
 		mov		ebx,eax								;returns min in ebx
 		pop		eax									;reload	addres in eax
 ENDM
+
+
+
+max		macro	  nam
+local forloop3,ebxbigger,endloop3
+		push 	eax
+		mov		eax,nam								;address of object
+		mov		ecx,(arr PTR[eax]).address			;address of list 	
+		mov		edx,(arr PTR[eax]).len
+		
+		mov	eax,[ecx]								;eax=min
+		mov	edi,0									;edi=counter
+		cmp edx,0
+		jz 	endloop3
+		
+forloop3:
+		cmp 	edi,edx
+		jz		endloop3
+		mov 	ebx,[ecx+edi*4]						;ebx=list[i]
+		cmp 	ebx,eax								;list[i]<min
+		jl		ebxbigger
+		mov		eax,ebx
+					
+ebxbigger:	
+		inc 	edi
+		jmp 	forloop3
+					
+endloop3:
+		mov		ebx,eax								;returns min in ebx
+		pop		eax									;reload	addres in eax
+ENDM
+
+
+
+
+
+
+
+quickaux proc
+	push ebp
+	mov ebp,esp
+	pushad
+
+	mov ebx,[ebp+8]		; start of partition
+						;;  find pivot index:	
+ploop:
+	cmp ebx,[ebp+12]	;  last cell of partition?
+	jge qretrn			;  no pivot, so exit
+	mov eax, [ebx+4]	;  A[i+1]
+	cmp eax, [ebx]		;  A[i]
+	jl pfound			;  A[i]>A[i+1], pivot found
+	add ebx,4			;  next cell
+	jmp ploop
+pfound:
+	;;  use two counters:	 ebx and esi.  ebx always points to the
+	;;  first cell of second partition (what's >= pivot)
+	mov ecx,[ebx]		;  save pivot in ecx
+	mov esi,ebx
+	add esi,4			;  next cell
+tloop:
+	cmp ecx,[esi]		;  compare pivot and element
+	jle noswap			;  no swap if element >=pivot
+	;;  swap [ebx] and [esi], advance both
+	mov eax,[ebx]
+	push eax		;  use stack as temp
+	mov eax,[esi]
+	mov [ebx],eax
+	pop eax
+	mov [esi],eax		
+	add ebx,4			;  next cell must still be >= pivot
+noswap:				
+	add esi,4			;  goto next cell, preserve ebx
+	cmp esi,[ebp+12]	;  end of partition?
+	jle tloop			
+
+	;;  ebx holds start addr of second partition
+	
+	sub ebx,4
+	push ebx			;  end of first paritition
+	mov eax,[ebp+8]		 
+	push eax			;  start of first partition
+	call quickaux
+	add esp,8			
+	;;  second partition
+	mov eax,[ebp+12]
+	push eax			;  end of second partition
+	add ebx,4
+	push ebx			;  start of second partition
+	call quickaux
+	add esp,8
+	
+qretrn:
+	popad
+	mov esp,ebp
+	pop ebp
+	ret
+quickaux endp
+
+
+
+
+QuickSort macro  nam
+
+	pushad
+	mov		eax,nam						;address of object
+	mov ebx,(arr PTR[eax]).address		;  start addr of array
+	mov eax,(arr PTR[eax]).len			;  end index of partition
+	dec eax
+	shl eax,2							;  multiply by 4: sizeof(int)==4
+	add eax,ebx							;  eax holds end addr of partition
+	mov ecx,0							;  start index of partition
+	shl ecx,2
+	add ecx,ebx							;  start addr of partition
+	push eax							;  quickaux expects start and end 
+	push ecx							;    addresses of partition as arguments.
+	call quickaux		
+	add esp,8
+	popad
+ENDM
+
+
 
