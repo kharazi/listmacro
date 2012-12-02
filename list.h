@@ -36,9 +36,11 @@ list	macro	nam,siz					;mov address to eax
 		
 		.CODE
 		
+		pushad
 		mov 	eax,siz					
 		push 	eax
 		call 	malloc							;allocate memorry
+		
 		
 		ASSUME 	ebx:PTR arr						;ebx is an object
 												;assign objects attributes
@@ -51,7 +53,7 @@ list	macro	nam,siz					;mov address to eax
 		mov		eax,ebx							;returns address of object in eax
 		mov		nam,eax							;save address of object in memory
 		
-		
+		popad
 ENDM		
 
 append	macro	nam,value			
@@ -86,30 +88,29 @@ ENDM
 
 
 
-find	macro 	nam,value 			; Move first occourd value in list to eax register , Move -1 if not find
-local 	find_for,not_find,end_find,finded	
+find	macro 	nam,value 			; Move first occourd value in list to ebx register , Move -1 if not find
+local 	find_for,not_find,end_find
 		
 		push 	ecx
 		push 	edx
 		mov		eax,nam							;address of object
 		mov 	ecx , (arr PTR[eax]).address
 		mov 	edx , (arr PTR[eax]).len 
+		cmp		edx,0
 		jz		not_find						; if len ==0 
 		dec 	edx
 		mov 	ebx, 0 
 find_for:
 		mov		edi,[ecx+ebx*4]
 		cmp 	edi,value
-		je		finded
+		je		end_find
+		inc		ebx
 		cmp 	ebx,edx
 		jle		find_for 
 		
 		
 not_find:
-		mov 	eax,-1
-		jmp		end_find
-finded:
-		mov 	eax, ebx 
+		mov 	ebx,-1
 end_find:
 		pop 	edx
 		pop 	ecx
@@ -345,3 +346,58 @@ ENDM
 
 
 
+
+BubbleSort macro  nam
+
+	pushad
+	mov		eax,nam						;address of object
+	mov ebx,(arr PTR[eax]).address		;  start addr of array
+	mov eax,(arr PTR[eax]).len			;  end index of partition
+	
+	
+	push eax							;  quickaux expects start and end 
+	push ecx							;    addresses of partition as arguments.
+	call bs
+	add esp,8
+	popad
+ENDM
+
+
+
+bs proc
+		push ebp
+		mov ebp,esp
+		pushad
+        mov ecx,[ebp+12]
+	
+        mov edx,[ebp+8]
+		
+		mov	eax,0
+bs_i:
+		dec	ecx
+		mov eax,0
+bs_j:
+		
+        mov edi,DWORD PTR [edx+eax*4]
+		
+        cmp DWORD PTR [edx+eax*4+4],edi
+        jl l
+        mov edi,DWORD PTR [edx+eax*4]
+		mov	esi,DWORD PTR [edx+eax*4+4]
+        mov DWORD PTR [edx+eax*4+4],edi
+		mov DWORD PTR [edx+eax*4],esi
+l:
+        inc eax
+        cmp eax,ecx
+        jl bs_j
+		
+		
+        cmp ecx,0
+        jg bs_i
+		
+		popad
+		mov esp,ebp
+		pop ebp
+		ret
+bs endp
+ 
