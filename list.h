@@ -12,6 +12,10 @@ cr EQU 0dh
 Lf EQU 0ah 
 
 .DATA
+answer			BYTE		11 DUP(?)
+				BYTE		"."
+rem				BYTE		11 DUP(?)
+				BYTE		0dh,0ah,0
 append_error	BYTE	"ERROR!",cr,Lf,"len=size",0
 outofindex		BYTE	"ERROR!",cr,Lf,"index>len",0
 reshte			BYTE	11 DUP(?),0
@@ -194,6 +198,37 @@ forloop2:
 end_m2:
 		popad									;reload registers
 ENDM
+
+ave		macro 	nam
+		pushd 	eax						; save registers
+		pushd 	ecx
+		pushd 	edx
+		pushd	edi
+		
+		mov		eax,nam						
+		;mov		ecx,(arr PTR[eax]).address
+		mov		ecx,(arr PTR[eax]).len
+		sum 	nam						;sum=ebx
+		mov		eax,ebx
+		cdq
+		idiv 	ecx	
+		
+		dtoa	answer,eax
+		imul	edx,10
+		mov		eax,edx
+		mov		ebx,5
+		cdq
+		idiv	ebx
+		dtoa	rem,eax
+		output	answer
+		
+		
+		pop 	edi 
+		pop 	edx						;reload registers
+		pop 	ecx
+		pop 	eax
+		
+ENDM 
 
 
 min		macro	  nam
@@ -400,4 +435,88 @@ l:
 		pop ebp
 		ret
 bs endp
+
+sum 	macro 	nam					; save sum of array in ebx register
+local 	sum_i,quit_sum		
+		pushd 	eax						; save registers
+		pushd 	ecx
+		pushd 	edx
+		pushd	edi
+		
+		mov 	ebx, nam
+		mov 	ecx, (arr PTR[ebx]).len
+		mov 	edx, (arr PTR[ebx]).address
+		mov 	ebx,0
+		cmp 	ecx,0 					; if ecx ==0  ->quit
+		dec		ecx
+		jz		quit_sum
+sum_i:	
+		add		ebx,[edx+ecx*4]
+		dec		ecx
+		cmp 	ecx,0 					; if ecx ==0  ->quit
+		jge		sum_i
+quit_sum:
+		pop 	edi 
+		pop 	edx						;reload registers
+		pop 	ecx
+		pop 	eax
+ENDM
+
+
+in_sort 		macro  nam           ; insertionsort for list
+local for_1,while_1,endwhile
+		pushad							;save	registers
+		
+		mov			eax,nam						;address of object
+		mov 		ecx,(arr PTR[eax]).address		;address of list 
+		mov 		ebx , 1					; loop counter   ebx=i
+for_1:		
+					; esi = j 
+		mov 		edx, [ecx+ebx*4]			; edx= save
+
+		mov			esi, ebx					; j=i 
+	
+		
+	while_1:
+		
+		cmp  		esi, 0 
+		jle			endwhile
+		
+		mov 		ebp , esi 
+		dec			ebp           ; ebp =j-1
+		;mov 		ebp , [ecx+ebp *4]
+		
+		mov 		ebp , [ecx+ebp *4]
+	
+		cmp			ebp , edx
+		jg			endwhile 
+			pushd 	eax
+			pushd 	ebx
+			mov 	eax,esi
+			dec		eax
+			mov 	ebx,[ecx+eax*4]
+			mov 	DWORD PTR[ecx +esi*4], ebx
+			
+			
+			pop		ebx
+			pop 	eax
+			
+		
+			dec 	esi
+		jmp 		while_1	
+
+		
+	endwhile:
+	
+		mov 	DWORD PTR [ecx+esi*4],edx
+		
+		inc			ebx
+		cmp 		ebx,(arr PTR[eax]).len
+		jl			for_1
+ 		
+		
+		popad
+	
+ENDM
+
  
