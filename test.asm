@@ -22,20 +22,23 @@ endl	BYTE	cr,Lf,0
 
 prompt_constructor	BYTE	"list with 20 byte capacity has been made by list macro",cr,Lf,0
 prompt_constructor2	BYTE	"another list has been built by list.h macro",cr,Lf,0
-prompt_append1		BYTE	"values 7,9,132,2,5 has been added to list",cr,Lf,0
+prompt_append1		BYTE	"values 7,9,133,2,5 has been added to list",cr,Lf,0
 prompt_append2		BYTE	"values  87,21,1,9,38 has been added to list",cr,Lf,0
 prompt_append3		BYTE	"values  7,9 has been added to this list",cr,Lf,0
 prompt_show			BYTE	"list's values:",cr,Lf,0
 prompt_show2		BYTE	"second list's values:",cr,Lf,0
 prompt_quicksort	BYTE	"list has been sort by quick sort",cr,Lf,0
 prompt_bubblesort	BYTE	"list has been sort by bubble sort",cr,Lf,0
+prompt_in_sort		BYTE	"list has been sort by insertion sort",cr,Lf,0
 prompt_get			BYTE	"list[1]:",cr,Lf,0
+prompt_sum			BYTE	"sum of list's values",cr,Lf,0
 prompt_pop_back		BYTE	"list has been pop_back",cr,Lf,0
 prompt_top			BYTE	"list's top value:",cr,Lf,0
 prompt_delete		BYTE 	"list[1] has been deleted",cr,Lf,0
 prompt_min			BYTE	"list's min value:",cr,Lf,0
 prompt_max			BYTE	"list's max value:",cr,Lf,0
 prompt_len			BYTE	"list's length:",cr,Lf,0
+prompt_ave			BYTE	"list's average:",cr,Lf,0
 prompt_find			BYTE	"index of find element 9:",cr,Lf,0
 .CODE
 _start:	
@@ -63,7 +66,7 @@ _start:
 	
 	append	metallica,7
 	append	metallica,9
-	append	metallica,132
+	append	metallica,133
 	append	metallica,2
 	append	metallica,5
 	output	prompt_append1
@@ -120,7 +123,7 @@ _start:
 	dtoa	string,ebx
 	output	string
 		output	endl
-		output	endl
+		output	endl	
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	
 	output	prompt_max
@@ -130,7 +133,21 @@ _start:
 		output	endl
 		output	endl
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	
+	output	prompt_sum
+	sum		metallica
+	dtoa	string,ebx
+	output	string
+		output	endl
+		output	endl
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+	output	prompt_ave
+	ave		metallica
+		output	endl
+		output	endl	
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	
 	output		prompt_bubblesort
 	BubbleSort	metallica	
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -173,6 +190,15 @@ _start:
 		output	endl
 		output	endl
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	
+	output		prompt_in_sort
+	in_Sort	metallica	
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	
+	output	prompt_show
+	show	metallica
+		output	endl
+		output	endl
 	
 	
 	
